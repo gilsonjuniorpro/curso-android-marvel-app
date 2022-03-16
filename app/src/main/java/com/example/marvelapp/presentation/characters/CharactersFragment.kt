@@ -5,10 +5,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.core.domain.model.Character
 import com.example.marvelapp.R
 import com.example.marvelapp.databinding.FragmentCharactersBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class CharactersFragment : Fragment() {
@@ -16,6 +20,7 @@ class CharactersFragment : Fragment() {
     private var _binding: FragmentCharactersBinding? = null
     private val binding: FragmentCharactersBinding get() = _binding!!
     private val charactersAdapter = CharactersAdapter()
+    private val viewModel: CharactersViewModel by viewModels()
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -33,15 +38,16 @@ class CharactersFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initCharactersAdapter()
 
-        charactersAdapter.submitList(
-                listOf(
-                        Character("Iron Man", "https://cdn.britannica.com/49/182849-050-4C7FE34F/scene-Iron-Man.jpg"),
-                        Character("Iron Man", "https://cdn.britannica.com/49/182849-050-4C7FE34F/scene-Iron-Man.jpg"),
-                        Character("Iron Man", "https://cdn.britannica.com/49/182849-050-4C7FE34F/scene-Iron-Man.jpg"),
-                        Character("Iron Man", "https://cdn.britannica.com/49/182849-050-4C7FE34F/scene-Iron-Man.jpg"),
-                        Character("Iron Man", "https://cdn.britannica.com/49/182849-050-4C7FE34F/scene-Iron-Man.jpg")
-                )
-        )
+        lifecycleScope.launch {
+            viewModel.charactersPagingData("").collect { pagingData ->
+                //to be used with ListAdapter
+                //charactersAdapter.submitList(pagingData)
+
+                //to be used with PagingDataAdapter
+                charactersAdapter.submitData(pagingData)
+            }
+        }
+
     }
 
     private fun initCharactersAdapter(){
@@ -51,3 +57,13 @@ class CharactersFragment : Fragment() {
         }
     }
 }
+
+/*charactersAdapter.submitList(
+listOf(
+Character("Iron Man", "https://cdn.britannica.com/49/182849-050-4C7FE34F/scene-Iron-Man.jpg"),
+Character("Iron Man", "https://cdn.britannica.com/49/182849-050-4C7FE34F/scene-Iron-Man.jpg"),
+Character("Iron Man", "https://cdn.britannica.com/49/182849-050-4C7FE34F/scene-Iron-Man.jpg"),
+Character("Iron Man", "https://cdn.britannica.com/49/182849-050-4C7FE34F/scene-Iron-Man.jpg"),
+Character("Iron Man", "https://cdn.britannica.com/49/182849-050-4C7FE34F/scene-Iron-Man.jpg")
+)
+)*/
